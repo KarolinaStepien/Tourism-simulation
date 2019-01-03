@@ -1,4 +1,6 @@
 ; TO DO - propozycje Zosi
+; WINCEJ BUDYNKOW DODAĆ!!!
+; MĄDRZEJSZE TO-VISIT
 ; nowe pola w patches-own: time-to-visit current-visitors max-visitors  -------------> zmiana w funkcji move-walkers tak żeby czekały w miejscu dany czas!!! plus sprawdzanie czy można wejść a jak nie jakiś system decyzji?
 ; nowe pole żółwika PATIENCE???? XD
 ; nowy suwak building-count
@@ -15,7 +17,7 @@ turtles-own[
   goal
   budget
   energy
-  tovisit
+  to-visit
   waiter
   patience
 ]
@@ -46,24 +48,24 @@ to setup
 
   ; obliczenie ticków potrzebnych na zwiedzenie z proporcji: 50 ticków to około 20 minut czasu realnego
 
-
-  ask patch(45)(25)[become-building 9 100 225 0] ;Wawel - 90 min
-  ask patch(70)(120)[become-building 2 10 50 0] ;Barbakan - 20 min
-  ask patch(50)(90)[become-building 4 80 75 0] ;Mariacki - 30 min
-  ask patch(40)(70)[become-building 0 1 0 0]
-  ask patch(30)(90)[become-building 0 100 450 0]  ;Sukiennice muzeum - 180 min
+  ask patch(45)(25)[become-building 18 225 200] ;Wawel - 90 min 18 zł
+  ask patch(70)(120)[become-building 8 50 200] ;Barbakan - 20 min 8 zł
+  ask patch(50)(90)[become-building 10 75 200] ;Mariacki - 30 min 10 zł
+  ask patch(40)(70)[become-building 0 0 walker-count]
+  ask patch(30)(90)[become-building 19 450 200]  ;Sukiennice muzeum - 180 min 19 zł
+  set buildings sublist buildings 0 building-count
   create-turtles walker-count[
     set xcor random-xcor
     set ycor random-ycor
     set goal one-of patches
     set color black
     set size 3
-    set budget random 20
+    set budget random 100
     set energy random 100
     set shape "person"
-    set tovisit buildings
+    set to-visit buildings
     set waiter 0
-    ; set patience random
+    set patience random walker-count / building-count
   ]
 
 end
@@ -76,11 +78,10 @@ to go       ; co się dzieje w pętli co tick
   tick
 end
 
-to become-building [ entry-price popul time max-vis]      ; konstruktor budynku
+to become-building [ entry-price time max-vis]      ; konstruktor budynku
   set pcolor red
   set buildings(fput self buildings)
   set price entry-price
-  set popularity popul
   set max-visitors max-vis
   set visit-time time
 end
@@ -104,9 +105,9 @@ end
 
 to move-walkers     ; funkcja, która minusuje energie i ogarnia kolejne cele
   ask turtles[
-    set energy energy - .1
+    ;set energy energy - .1
 ;    set budget budget + .1
-    if length tovisit = 0 [
+    if length to-visit = 0 [
       die
     ]
     if energy < 0
@@ -114,37 +115,37 @@ to move-walkers     ; funkcja, która minusuje energie i ogarnia kolejne cele
 
     ifelse patch-here = goal[
 
-     set tovisit remove patch-here tovisit
 
-     ifelse patience >= turtles-here[
-
-     ifelse budget >= price[
-      ifelse waiter >= visit-time[
-        set budget budget - price
-                if length tovisit = 0 [
-                   die
-                 ]
-            set goal one-of sort tovisit
+      let turtles-number count turtles-here
+      ifelse max-visitors >= turtles-number[
+        set to-visit remove patch-here to-visit
+        ifelse budget >= price[
+          ifelse waiter >= visit-time[
+            set budget budget - price
+            if length to-visit = 0 [
+              die
+            ]
+            set goal one-of to-visit
             ask patch-here[set visitors visitors + 1]
-
-
-      set waiter 0
-      walk-towards-goal
+            set waiter 0
+            walk-towards-goal
+          ]
+          [
+            set waiter waiter + 1
+          ]
         ]
+        [if length to-visit > 0
+          [set goal one-of to-visit]
+          walk-towards-goal
+        ]
+      ]
       [
-        set waiter waiter + 1
-      ]
-      ]
-      [set goal one-of buildings
-        walk-towards-goal
-      ]
-    ]
-      [
-        set goal one-of buildings
+        if length to-visit > 0
+          [set goal one-of to-visit]
         walk-towards-goal
       ]
 
-     ]
+    ]
     [
       walk-towards-goal
     ]
@@ -349,7 +350,7 @@ MONITOR
 873
 217
 Sukiennice visitors
-[visitors] of patches at-points [[50 90]]
+[visitors] of patches at-points [[30 90]]
 17
 1
 11
@@ -394,6 +395,32 @@ MONITOR
 382
 Church price
 [price] of patches at-points [[50 90]]
+17
+1
+11
+
+SLIDER
+1056
+511
+1228
+544
+building-count
+building-count
+0
+10
+5.0
+1
+1
+NIL
+HORIZONTAL
+
+MONITOR
+718
+415
+947
+460
+Grodzka
+[visitors] of patches at-points [[40 70]]
 17
 1
 11
