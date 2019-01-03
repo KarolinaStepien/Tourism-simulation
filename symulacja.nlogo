@@ -1,6 +1,7 @@
 ; TO DO - propozycje Zosi
 ; WINCEJ BUDYNKOW DODAĆ!!!
 ; MĄDRZEJSZE TO-VISIT
+; czas wizyty, ilość zwiedzania
 ; nowe pola w patches-own: time-to-visit current-visitors max-visitors  -------------> zmiana w funkcji move-walkers tak żeby czekały w miejscu dany czas!!! plus sprawdzanie czy można wejść a jak nie jakiś system decyzji?
 ; nowe pole żółwika PATIENCE???? XD
 ; nowy suwak building-count
@@ -16,7 +17,7 @@
 turtles-own[
   goal
   budget
-  energy
+  time
   to-visit
   waiter
   patience
@@ -32,12 +33,13 @@ patches-own[
 
 ]
 
-globals[buildings]
+globals[buildings sums]
 
 to setup
   clear-all
   reset-ticks
   set buildings(list)
+  set sums(list)
   import-drawing "map.png"
   ask patches[
     set pcolor green
@@ -48,11 +50,22 @@ to setup
 
   ; obliczenie ticków potrzebnych na zwiedzenie z proporcji: 50 ticków to około 20 minut czasu realnego
 
+  ask patch(100)(130)[become-building 18 225 200] ;Wawel - 90 min 18 zł
+  ask patch(5)(5)[become-building 8 50 200] ;Barbakan - 20 min 8 zł
+  ask patch(95)(3)[become-building 10 75 200] ;Mariacki - 30 min 10 zł
+  ask patch(10)(130)[become-building 5 0 walker-count]
+  ask patch(10)(40)[become-building 19 450 200]  ;Sukiennice muzeum - 180 min 19 zł
   ask patch(45)(25)[become-building 18 225 200] ;Wawel - 90 min 18 zł
   ask patch(70)(120)[become-building 8 50 200] ;Barbakan - 20 min 8 zł
   ask patch(50)(90)[become-building 10 75 200] ;Mariacki - 30 min 10 zł
   ask patch(40)(70)[become-building 0 0 walker-count]
   ask patch(30)(90)[become-building 19 450 200]  ;Sukiennice muzeum - 180 min 19 zł
+
+  ask patches [
+    if pxcor = pycor [
+      set pcolor gray
+    ]
+  ]
   set buildings sublist buildings 0 building-count
   create-turtles walker-count[
     set xcor random-xcor
@@ -61,7 +74,7 @@ to setup
     set color black
     set size 3
     set budget random 100
-    set energy random 100
+    set time random 1200
     set shape "person"
     set to-visit buildings
     set waiter 0
@@ -74,16 +87,25 @@ end
 to go       ; co się dzieje w pętli co tick
   move-walkers
   decay-popularity
-  if not any? turtles [ stop ]
+  if not any? turtles [
+    ;if building-count >= 5 [
+     ; stop
+    ;]
+    ; set building-count building-count + 1
+
+    ; set sums (fput sum([visitors * price] of patches at-points [[70 120] [45 25] [50 90] [30 90]]) sums)
+    ; setup
+     stop
+  ]
   tick
 end
 
-to become-building [ entry-price time max-vis]      ; konstruktor budynku
+to become-building [ entry-price v-time max-vis]      ; konstruktor budynku
   set pcolor red
   set buildings(fput self buildings)
   set price entry-price
   set max-visitors max-vis
-  set visit-time time
+  set visit-time v-time
 end
 
 to decay-popularity       ; z czasem popoularność patchy się zmniejsza
@@ -105,12 +127,12 @@ end
 
 to move-walkers     ; funkcja, która minusuje energie i ogarnia kolejne cele
   ask turtles[
-    ;set energy energy - .1
+    set time time - 1
 ;    set budget budget + .1
     if length to-visit = 0 [
       die
     ]
-    if energy < 0
+    if time < 0
       [die]
 
     ifelse patch-here = goal[
@@ -421,6 +443,17 @@ MONITOR
 460
 Grodzka
 [visitors] of patches at-points [[40 70]]
+17
+1
+11
+
+MONITOR
+711
+36
+903
+81
+Krakow Income
+sum([visitors * price] of patches at-points [[70 120] [45 25] [50 90] [30 90] [10 40] [10 130] [95 3] [5 5] [100 130]])
 17
 1
 11
