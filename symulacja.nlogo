@@ -1,3 +1,16 @@
+;TO DO - propozycje Zosi
+; nowe pola w patches-own: time-to-visit current-visitors max-visitors  -------------> zmiana w funkcji move-walkers tak żeby czekały w miejscu dany czas!!! plus sprawdzanie czy można wejść a jak nie jakiś system decyzji?
+; nowe pole żółwika PATIENCE???? XD
+; nowy suwak building-count
+; zrobienie z patchow listy i ustawianie buildingow w zaleznosci od suwaka building-count
+; sumowanie dochodów Krakowa
+; tworzenie wykresów dochód od ilość budynkow? ew wykresu dochodu po prostu
+; pętla zwrotna? o.O zmiana funkcji route-on-the-way-to, ew. ustalenie na sztywno popularity-per-step 0 i minimum--route-popularity 80
+; rezygnacja z mapki Krakowa? ustalenie w jakiś sposób dostęnych dróg? Czyli po prostu zadziabanie odpowiednich dróg na szaro i zmienienie logiki popularności drogi lub dodanie kolejnego koloru,
+; który będzie kolorem drogi, a dalej szary będzie kolorem popularnej drogi
+
+
+
 turtles-own[
   goal
   budget
@@ -130,7 +143,6 @@ to-report route-on-the-way-to[l current-distance]
     ])
   report min-one-of routes-on-the-way-to-goal[distance self]
 end
-
 
 @#$#@#$#@
 GRAPHICS-WINDOW
