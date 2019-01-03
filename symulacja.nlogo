@@ -1,4 +1,4 @@
-;TO DO - propozycje Zosi
+; TO DO - propozycje Zosi
 ; nowe pola w patches-own: time-to-visit current-visitors max-visitors  -------------> zmiana w funkcji move-walkers tak żeby czekały w miejscu dany czas!!! plus sprawdzanie czy można wejść a jak nie jakiś system decyzji?
 ; nowe pole żółwika PATIENCE???? XD
 ; nowy suwak building-count
@@ -8,7 +8,7 @@
 ; pętla zwrotna? o.O zmiana funkcji route-on-the-way-to, ew. ustalenie na sztywno popularity-per-step 0 i minimum--route-popularity 80
 ; rezygnacja z mapki Krakowa? ustalenie w jakiś sposób dostęnych dróg? Czyli po prostu zadziabanie odpowiednich dróg na szaro i zmienienie logiki popularności drogi lub dodanie kolejnego koloru,
 ; który będzie kolorem drogi, a dalej szary będzie kolorem popularnej drogi
-
+; czas pobytu dodac do żółwików
 
 
 turtles-own[
@@ -16,12 +16,18 @@ turtles-own[
   budget
   energy
   tovisit
+  waiter
+  patience
 ]
 
 patches-own[
   popularity
   price
   visitors
+  curent-visitors
+  max-visitors
+  visit-time
+
 ]
 
 globals[buildings]
@@ -37,11 +43,15 @@ to setup
     set price 0
     set visitors 0
   ]
-  ask patch(45)(25)[become-building 9 100 ] ;Wawel
-  ask patch(70)(120)[become-building 2 10] ;Barbakan
-  ask patch(50)(90)[become-building 4 80] ;Mariacki
-  ask patch(40)(70)[become-building 0 1]
-  ask patch(30)(90)[become-building 0 100]  ;Sukiennice
+
+  ; obliczenie ticków potrzebnych na zwiedzenie z proporcji: 50 ticków to około 20 minut czasu realnego
+
+
+  ask patch(45)(25)[become-building 9 100 225 0] ;Wawel - 90 min
+  ask patch(70)(120)[become-building 2 10 50 0] ;Barbakan - 20 min
+  ask patch(50)(90)[become-building 4 80 75 0] ;Mariacki - 30 min
+  ask patch(40)(70)[become-building 0 1 0 0]
+  ask patch(30)(90)[become-building 0 100 450 0]  ;Sukiennice muzeum - 180 min
   create-turtles walker-count[
     set xcor random-xcor
     set ycor random-ycor
@@ -52,26 +62,30 @@ to setup
     set energy random 100
     set shape "person"
     set tovisit buildings
+    set waiter 0
+    ; set patience random
   ]
 
 end
 
 
-to go
+to go       ; co się dzieje w pętli co tick
   move-walkers
   decay-popularity
   if not any? turtles [ stop ]
   tick
 end
 
-to become-building [ entryPrice popul]
+to become-building [ entry-price popul time max-vis]      ; konstruktor budynku
   set pcolor red
   set buildings(fput self buildings)
-  set price entryPrice
+  set price entry-price
   set popularity popul
+  set max-visitors max-vis
+  set visit-time time
 end
 
-to decay-popularity
+to decay-popularity       ; z czasem popoularność patchy się zmniejsza
   ask patches with[pcolor != red][
     if popularity > 1 and not any? turtles-here[set popularity popularity * (100 - 0.7)/ 100]
     ifelse pcolor = green
@@ -88,7 +102,7 @@ to become-more-popular
   if popularity > minimum-route-popularity[set pcolor gray]
 end
 
-to move-walkers
+to move-walkers     ; funkcja, która minusuje energie i ogarnia kolejne cele
   ask turtles[
     set energy energy - .1
 ;    set budget budget + .1
@@ -98,33 +112,48 @@ to move-walkers
     if energy < 0
       [die]
 
-    ifelse patch-here = goal
-      [ifelse pcolor = red
-       [ set tovisit remove patch-here tovisit
-        ifelse budget >= price
-          [set budget budget - price
+    ifelse patch-here = goal[
+
+     set tovisit remove patch-here tovisit
+
+     ifelse patience >= turtles-here[
+
+     ifelse budget >= price[
+      ifelse waiter >= visit-time[
+        set budget budget - price
                 if length tovisit = 0 [
                    die
                  ]
-          ;  let counter  0
-          ;  while[ counter < 20000]
-          ;  [ ask turtles-with [(xcor = 45) and (ycor = 25)][ fd 0]
-              ;set label patch-here
-          ;    set  counter counter + 0.01]
-;
             set goal one-of sort tovisit
             ask patch-here[set visitors visitors + 1]
-          ]
-        [set goal one-of buildings]]
-        [set goal one-of buildings]
+
+
+      set waiter 0
+      walk-towards-goal
+        ]
+      [
+        set waiter waiter + 1
+      ]
+      ]
+      [set goal one-of buildings
+        walk-towards-goal
+      ]
+    ]
+      [
+        set goal one-of buildings
+        walk-towards-goal
+      ]
+
      ]
-    [walk-towards-goal]
+    [
+      walk-towards-goal
+    ]
   ]
 end
 
 
 
-to walk-towards-goal
+to walk-towards-goal         ; funkcja, która kieruje zółwika w dobrą stronę i dodaje popularność do patcha, na który pójdzie, a potem jeśli są w zasięgu szare to idź na najlepszy jak nie to idx w kierunku goal
   let last-distance distance goal
   let best-route-tile route-on-the-way-to goal last-distance
 
@@ -132,14 +161,14 @@ to walk-towards-goal
   [ask patch-here[become-more-popular]]
 
   ifelse best-route-tile = nobody
-    [ face goal]
+    [face goal]
   [face best-route-tile]
   fd 1
 end
 
-to-report route-on-the-way-to[l current-distance]
+to-report route-on-the-way-to[l current-distance]      ; funkcja zwracająca najbliższy punkt, który jest popularny, który ma mniejszy dystans do celu niż my obecnie i który jest w zasięgu wzroku.
   let routes-on-the-way-to-goal(patches in-radius walker-vision-dist with[
-      pcolor = gray and distance l < current-distance - 1
+      pcolor = gray and distance l < current-distance
     ])
   report min-one-of routes-on-the-way-to-goal[distance self]
 end
@@ -245,7 +274,7 @@ walker-count
 walker-count
 0
 200
-135.0
+106.0
 1
 1
 NIL
