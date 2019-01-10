@@ -61,11 +61,11 @@ to setup
   ask patch(40)(70)[become-building 0 0 walker-count]
   ask patch(30)(90)[become-building 19 450 200]  ;Sukiennice muzeum - 180 min 19 zł
 
-  ask patches [
-    if pxcor = pycor [
-      set pcolor gray
-    ]
-  ]
+  ;ask patches [
+   ; if pxcor = pycor [
+    ;  set pcolor gray
+    ;]
+ ; ]
   set buildings sublist buildings 0 building-count
   create-turtles walker-count[
     set xcor random-xcor
@@ -430,7 +430,7 @@ building-count
 building-count
 0
 10
-5.0
+7.0
 1
 1
 NIL
