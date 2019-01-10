@@ -25,18 +25,19 @@ to setup
   reset-ticks
   set buildings(list)
   set sums(list)
-  ;import-drawing "map.png"
+  import-drawing "map.png"
   ask patches[
     set pcolor green
     set popularity 1
     set price 0
     set visitors 0
   ]
+  create-buildings
+  create-people
+end
 
+to create-buildings
   ; obliczenie ticków potrzebnych na zwiedzenie z proporcji: 50 ticków to około 20 minut czasu realnego
-
-
-
   ask patch(23)(59)[become-building 0 50 200] ;Franciszkanska - 20 min 0 zł
   ask patch(27)(103)[become-building 0 25 200] ;Plac Szczepański - 10 min 0zł
   ask patch(90)(105)[become-building 30 300 50] ;Teatr słowackiego - 2godz 30zł
@@ -52,8 +53,10 @@ to setup
   ask patch(50)(88)[become-building 10 75 200] ;Mariacki - 30 min 10 zł
   ask patch(39)(73)[become-building 100 150 30] ;Wierzynek - 60 min 100 zł
   ask patch(34)(82)[become-building 19 450 200]  ;Sukiennice muzeum - 180 min 19 zł
-
   set buildings sublist buildings 0 building-count
+end
+
+to create-people
   create-turtles walker-count[
     set xcor random-xcor
     set ycor random-ycor
@@ -74,7 +77,6 @@ to setup
     ]
   ]
 end
-
 
 to go       ; co się dzieje w pętli co tick
   move-walkers
