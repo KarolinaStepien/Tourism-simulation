@@ -9,6 +9,7 @@ turtles-own[
 ]
 
 patches-own[
+
   popularity
   price
   visitors
@@ -68,7 +69,7 @@ to create-people
     set shape "person"
     set to-visit buildings
     set waiter 0
-    set hotel one-of patches with[ pxcor = 98 or pycor = 128 ]
+    set hotel one-of patches with[ pxcor = 100 or pycor = 130 ]
     ifelse time > 600[
       set in-hurry false
     ]
@@ -302,7 +303,7 @@ walker-count
 walker-count
 0
 200
-0.0
+200.0
 1
 1
 NIL
@@ -317,22 +318,7 @@ walker-vision-dist
 walker-vision-dist
 0
 10
-3.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-1088
-430
-1260
-463
-store-price
-store-price
-0
-25
-18.0
+1.0
 1
 1
 NIL
@@ -435,7 +421,7 @@ building-count
 building-count
 0
 15
-15.0
+1.0
 1
 1
 NIL
