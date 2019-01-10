@@ -50,22 +50,37 @@ to setup
 
   ; obliczenie ticków potrzebnych na zwiedzenie z proporcji: 50 ticków to około 20 minut czasu realnego
 
-  ask patch(100)(130)[become-building 18 225 200] ;Wawel - 90 min 18 zł
-  ask patch(5)(5)[become-building 8 50 200] ;Barbakan - 20 min 8 zł
-  ask patch(95)(3)[become-building 10 75 200] ;Mariacki - 30 min 10 zł
-  ask patch(10)(130)[become-building 5 0 walker-count]
-  ask patch(10)(40)[become-building 19 450 200]  ;Sukiennice muzeum - 180 min 19 zł
-  ask patch(45)(25)[become-building 18 225 200] ;Wawel - 90 min 18 zł
-  ask patch(70)(120)[become-building 8 50 200] ;Barbakan - 20 min 8 zł
-  ask patch(50)(90)[become-building 10 75 200] ;Mariacki - 30 min 10 zł
-  ask patch(40)(70)[become-building 0 0 walker-count]
-  ask patch(30)(90)[become-building 19 450 200]  ;Sukiennice muzeum - 180 min 19 zł
 
-  ;ask patches [
-   ; if pxcor = pycor [
-    ;  set pcolor gray
-    ;]
- ; ]
+
+  ask patch(23)(59)[become-building 0 50 200] ;Franciszkanska - 20 min 8 zł
+
+  ask patch(27)(103)[become-building 0 25 200] ;Plac Szczepański
+
+  ask patch(90)(105)[become-building 30 300 50] ; Teatr słowackiego
+
+  ask patch(12)(24)[become-building 0 70 200]  ;Bulwary wislane
+
+  ask patch(51)(111)[become-building 15 150 100] ; Czartoryscy
+
+  ask patch(97)(47)[become-building 10 150 40] ;Lodowisko
+
+  ask patch(82)(14)[become-building 30 150 10] ; Escape room
+
+  ask patch(19)(81)[become-building 0 20 200] ; UJ
+  ask patch(6)(101)[become-building 25 150 50]  ; Teatr Bagatela
+  ask patch(44)(52)[become-building 0 50 200] ;Plac Wszystkich Świętych
+
+  ask patch(48)(18)[become-building 18 225 200] ;Wawel - 90 min 18 zł
+  ask patch(64)(118)[become-building 8 50 200] ;Barbakan - 20 min 8 zł
+  ask patch(50)(88)[become-building 10 75 200] ;Mariacki - 30 min 10 zł
+  ask patch(39)(73)[become-building 100 150 30] ;Wierzynek - 60 min 100 zł
+  ask patch(34)(82)[become-building 19 450 200]  ;Sukiennice muzeum - 180 min 19 zł
+
+
+
+ ; ask patches [
+
+  ;]
   set buildings sublist buildings 0 building-count
   create-turtles walker-count[
     set xcor random-xcor
@@ -73,7 +88,7 @@ to setup
     set goal one-of patches
     set color black
     set size 3
-    set budget random 100
+    set budget random 1000
     set time random 1200
     set shape "person"
     set to-visit buildings
@@ -195,7 +210,6 @@ to-report route-on-the-way-to[l current-distance]      ; funkcja zwracająca naj
     ])
   report min-one-of routes-on-the-way-to-goal[distance self]
 end
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
@@ -282,7 +296,7 @@ minimum-route-popularity
 minimum-route-popularity
 0
 80
-80.0
+59.0
 1
 1
 NIL
@@ -297,7 +311,7 @@ walker-count
 walker-count
 0
 200
-106.0
+200.0
 1
 1
 NIL
@@ -336,7 +350,7 @@ HORIZONTAL
 MONITOR
 724
 98
-852
+886
 143
 Barbakan visitors
 [visitors] of patches at-points [[70 120]]
@@ -345,10 +359,10 @@ Barbakan visitors
 11
 
 MONITOR
-728
-256
-834
-301
+726
+198
+887
+243
 Wawel visitors
 [visitors] of patches at-points [[45 25]]
 17
@@ -356,10 +370,10 @@ Wawel visitors
 11
 
 MONITOR
-727
-338
-889
-383
+725
+252
+886
+297
  St.Mary's Church visitors
 [visitors] of patches at-points [[50 90]]
 17
@@ -367,10 +381,10 @@ MONITOR
 11
 
 MONITOR
-725
-172
-873
-217
+724
+149
+886
+194
 Sukiennice visitors
 [visitors] of patches at-points [[30 90]]
 17
@@ -378,10 +392,10 @@ Sukiennice visitors
 11
 
 MONITOR
-921
-258
-1011
-303
+902
+202
+992
+247
 Wawel Price
 [price] of patches at-points [[45 25]]
 17
@@ -389,10 +403,10 @@ Wawel Price
 11
 
 MONITOR
-914
-175
-1035
-220
+903
+150
+993
+195
 Sukiennice Price
 [price] of patches at-points [[30 90]]
 17
@@ -400,10 +414,10 @@ Sukiennice Price
 11
 
 MONITOR
-919
-103
-1031
-148
+901
+98
+990
+143
 Barbakan Price
 [price] of patches at-points [[70 120]]
 17
@@ -411,10 +425,10 @@ Barbakan Price
 11
 
 MONITOR
-922
-337
-993
-382
+903
+252
+992
+297
 Church price
 [price] of patches at-points [[50 90]]
 17
@@ -429,7 +443,7 @@ SLIDER
 building-count
 building-count
 0
-10
+15
 7.0
 1
 1
@@ -437,23 +451,34 @@ NIL
 HORIZONTAL
 
 MONITOR
-718
-415
-947
-460
-Grodzka
-[visitors] of patches at-points [[40 70]]
+768
+22
+960
+67
+Krakow Income
+sum([visitors * price] of patches at-points [[70 120] [45 25] [50 90] [30 90] [10 40] [10 130] [95 3] [5 5] [100 130]])
 17
 1
 11
 
 MONITOR
-711
-36
-903
-81
-Krakow Income
-sum([visitors * price] of patches at-points [[70 120] [45 25] [50 90] [30 90] [10 40] [10 130] [95 3] [5 5] [100 130]])
+724
+303
+886
+348
+Wierzynek
+[visitors] of patches at-points [[10 130]]
+17
+1
+11
+
+MONITOR
+902
+303
+992
+348
+Wierzynek price
+[price] of patches at-points [[10 130]]
 17
 1
 11
