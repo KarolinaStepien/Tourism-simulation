@@ -1,26 +1,11 @@
-; TO DO - propozycje Zosi
-; WINCEJ BUDYNKOW DODAĆ!!!
-; MĄDRZEJSZE TO-VISIT
-; czas wizyty, ilość zwiedzania
-; nowe pola w patches-own: time-to-visit current-visitors max-visitors  -------------> zmiana w funkcji move-walkers tak żeby czekały w miejscu dany czas!!! plus sprawdzanie czy można wejść a jak nie jakiś system decyzji?
-; nowe pole żółwika PATIENCE???? XD
-; nowy suwak building-count
-; zrobienie z patchow listy i ustawianie buildingow w zaleznosci od suwaka building-count
-; sumowanie dochodów Krakowa
-; tworzenie wykresów dochód od ilość budynkow? ew wykresu dochodu po prostu
-; pętla zwrotna? o.O zmiana funkcji route-on-the-way-to, ew. ustalenie na sztywno popularity-per-step 0 i minimum--route-popularity 80
-; rezygnacja z mapki Krakowa? ustalenie w jakiś sposób dostęnych dróg? Czyli po prostu zadziabanie odpowiednich dróg na szaro i zmienienie logiki popularności drogi lub dodanie kolejnego koloru,
-; który będzie kolorem drogi, a dalej szary będzie kolorem popularnej drogi
-; czas pobytu dodac do żółwików
-
-
 turtles-own[
   goal
   budget
   time
   to-visit
   waiter
-  patience
+  in-hurry
+  hotel
 ]
 
 patches-own[
@@ -40,7 +25,7 @@ to setup
   reset-ticks
   set buildings(list)
   set sums(list)
-  import-drawing "map.png"
+  ;import-drawing "map.png"
   ask patches[
     set pcolor green
     set popularity 1
@@ -52,35 +37,22 @@ to setup
 
 
 
-  ask patch(23)(59)[become-building 0 50 200] ;Franciszkanska - 20 min 8 zł
-
-  ask patch(27)(103)[become-building 0 25 200] ;Plac Szczepański
-
-  ask patch(90)(105)[become-building 30 300 50] ; Teatr słowackiego
-
-  ask patch(12)(24)[become-building 0 70 200]  ;Bulwary wislane
-
-  ask patch(51)(111)[become-building 15 150 100] ; Czartoryscy
-
-  ask patch(97)(47)[become-building 10 150 40] ;Lodowisko
-
-  ask patch(82)(14)[become-building 30 150 10] ; Escape room
-
-  ask patch(19)(81)[become-building 0 20 200] ; UJ
-  ask patch(6)(101)[become-building 25 150 50]  ; Teatr Bagatela
-  ask patch(44)(52)[become-building 0 50 200] ;Plac Wszystkich Świętych
-
+  ask patch(23)(59)[become-building 0 50 200] ;Franciszkanska - 20 min 0 zł
+  ask patch(27)(103)[become-building 0 25 200] ;Plac Szczepański - 10 min 0zł
+  ask patch(90)(105)[become-building 30 300 50] ;Teatr słowackiego - 2godz 30zł
+  ask patch(12)(24)[become-building 0 70 200]  ;Bulwary wislane - 28min 0zł
+  ask patch(51)(111)[become-building 15 150 100] ;Czartoryscy - 1godz 15zł
+  ask patch(97)(47)[become-building 10 150 40] ;Lodowisko - 1godz 10zł
+  ask patch(82)(14)[become-building 30 150 10] ;Escape room - 1godz 20zł
+  ask patch(19)(81)[become-building 0 20 200] ;UJ - 8min 0zł
+  ask patch(6)(101)[become-building 25 150 50]  ;Teatr Bagatela - 1godz 25zł
+  ask patch(44)(52)[become-building 0 50 200] ;Plac Wszystkich Świętych - 20min 0zł
   ask patch(48)(18)[become-building 18 225 200] ;Wawel - 90 min 18 zł
   ask patch(64)(118)[become-building 8 50 200] ;Barbakan - 20 min 8 zł
   ask patch(50)(88)[become-building 10 75 200] ;Mariacki - 30 min 10 zł
   ask patch(39)(73)[become-building 100 150 30] ;Wierzynek - 60 min 100 zł
   ask patch(34)(82)[become-building 19 450 200]  ;Sukiennice muzeum - 180 min 19 zł
 
-
-
- ; ask patches [
-
-  ;]
   set buildings sublist buildings 0 building-count
   create-turtles walker-count[
     set xcor random-xcor
@@ -88,14 +60,19 @@ to setup
     set goal one-of patches
     set color black
     set size 3
-    set budget random 1000
-    set time random 1200
+    set budget random 500
+    set time 300 + random 1200           ;Mają minimum dwie godzinki, maks 10
     set shape "person"
     set to-visit buildings
     set waiter 0
-    set patience random walker-count / building-count
+    set hotel one-of patches with[ pxcor = 98 or pycor = 128 ]
+    ifelse time > 600[
+      set in-hurry false
+    ]
+    [
+      set in-hurry true
+    ]
   ]
-
 end
 
 
@@ -103,19 +80,12 @@ to go       ; co się dzieje w pętli co tick
   move-walkers
   decay-popularity
   if not any? turtles [
-    ;if building-count >= 5 [
-     ; stop
-    ;]
-    ; set building-count building-count + 1
-
-    ; set sums (fput sum([visitors * price] of patches at-points [[70 120] [45 25] [50 90] [30 90]]) sums)
-    ; setup
      stop
   ]
   tick
 end
 
-to become-building [ entry-price v-time max-vis]      ; konstruktor budynku
+to become-building [ entry-price v-time max-vis ]      ; konstruktor budynku
   set pcolor red
   set buildings(fput self buildings)
   set price entry-price
@@ -126,65 +96,82 @@ end
 to decay-popularity       ; z czasem popoularność patchy się zmniejsza
   ask patches with[pcolor != red][
     if popularity > 1 and not any? turtles-here[set popularity popularity * (100 - 0.7)/ 100]
-    ifelse pcolor = green
-    [if popularity < 1[set popularity 1]]
-    [if popularity < 1[
-      set popularity 1
-      set pcolor green]
-  ]
+    ifelse pcolor = green[
+      if popularity < 1[
+        set popularity 1
+      ]
+    ]
+    [
+      if popularity < 1[
+        set popularity 1
+        set pcolor green
+      ]
+    ]
   ]
 end
 
+
 to become-more-popular
   set popularity popularity + popularity-per-step
-  if popularity > minimum-route-popularity[set pcolor gray]
+  if popularity > minimum-route-popularity[
+    set pcolor gray
+  ]
 end
+
 
 to move-walkers     ; funkcja, która minusuje energie i ogarnia kolejne cele
   ask turtles[
     set time time - 1
-;    set budget budget + .1
-    if length to-visit = 0 [
+    if patch-here = hotel[
       die
     ]
-    if time < 0
-      [die]
 
-    ifelse patch-here = goal[
-
-
-      let turtles-number count turtles-here
-      ifelse max-visitors >= turtles-number[
-        set to-visit remove patch-here to-visit
-        ifelse budget >= price[
-          ifelse waiter >= visit-time[
-            set budget budget - price
-            if length to-visit = 0 [
-              die
+    ifelse time < 0 or length to-visit = 0[
+      ifelse length to-visit = 0[
+        set to-visit (fput hotel to-visit)
+      ]
+      [
+        set goal hotel
+        walk-towards-goal
+      ]
+    ]
+    [
+      ifelse patch-here = goal[
+        let turtles-number count turtles-here
+        ifelse max-visitors >= turtles-number[
+          set to-visit remove patch-here to-visit
+          ifelse budget >= price and (visit-time < 150 or (visit-time >= 150 and not in-hurry))[
+            ifelse waiter >= visit-time[
+              set budget budget - price
+              if length to-visit = 0 [
+                set to-visit (fput hotel to-visit)
+              ]
+              set goal one-of to-visit
+              ask patch-here[set visitors visitors + 1]
+              set waiter 0
+              walk-towards-goal
             ]
-            set goal one-of to-visit
-            ask patch-here[set visitors visitors + 1]
-            set waiter 0
-            walk-towards-goal
+            [
+              set waiter waiter + 1
+            ]
           ]
           [
-            set waiter waiter + 1
+            if length to-visit > 0[
+            set goal one-of to-visit
+            ]
+            walk-towards-goal
           ]
         ]
-        [if length to-visit > 0
-          [set goal one-of to-visit]
+        [
+          if length to-visit > 0[
+            set goal one-of to-visit
+          ]
           walk-towards-goal
         ]
       ]
       [
-        if length to-visit > 0
-          [set goal one-of to-visit]
         walk-towards-goal
       ]
-
-    ]
-    [
-      walk-towards-goal
     ]
   ]
 end
@@ -194,13 +181,15 @@ end
 to walk-towards-goal         ; funkcja, która kieruje zółwika w dobrą stronę i dodaje popularność do patcha, na który pójdzie, a potem jeśli są w zasięgu szare to idź na najlepszy jak nie to idx w kierunku goal
   let last-distance distance goal
   let best-route-tile route-on-the-way-to goal last-distance
-
-  if pcolor = green
-  [ask patch-here[become-more-popular]]
-
-  ifelse best-route-tile = nobody
-    [face goal]
-  [face best-route-tile]
+  if pcolor = green[
+    ask patch-here[become-more-popular]
+  ]
+  ifelse best-route-tile = nobody[
+    face goal
+  ]
+  [
+    face best-route-tile
+  ]
   fd 1
 end
 
@@ -311,7 +300,7 @@ walker-count
 walker-count
 0
 200
-200.0
+0.0
 1
 1
 NIL
@@ -348,89 +337,89 @@ NIL
 HORIZONTAL
 
 MONITOR
-724
-98
-886
-143
-Barbakan visitors
-[visitors] of patches at-points [[70 120]]
-17
-1
-11
-
-MONITOR
-726
-198
-887
-243
-Wawel visitors
-[visitors] of patches at-points [[45 25]]
-17
-1
-11
-
-MONITOR
-725
-252
-886
-297
- St.Mary's Church visitors
-[visitors] of patches at-points [[50 90]]
-17
-1
-11
-
-MONITOR
-724
-149
-886
-194
+705
+68
+867
+113
 Sukiennice visitors
-[visitors] of patches at-points [[30 90]]
+[visitors] of patches at-points [[34 82]]
 17
 1
 11
 
 MONITOR
-902
-202
-992
-247
-Wawel Price
-[price] of patches at-points [[45 25]]
+707
+168
+868
+213
+Mariacki church visitors
+[visitors] of patches at-points [[50 88]]
 17
 1
 11
 
 MONITOR
-903
-150
-993
-195
-Sukiennice Price
-[price] of patches at-points [[30 90]]
+706
+222
+867
+267
+Barbakan visitors
+[visitors] of patches at-points [[64 118]]
 17
 1
 11
 
 MONITOR
-901
-98
-990
-143
+704
+115
+868
+160
+Wierzynek
+[visitors] of patches at-points [[39 73]]
+17
+1
+11
+
+MONITOR
+883
+172
+973
+217
+Mariacki Price
+[price] of patches at-points [[50 88]]
+17
+1
+11
+
+MONITOR
+882
+115
+972
+160
+Wierzynek Price
+[price] of patches at-points [[39 73]]
+17
+1
+11
+
+MONITOR
+882
+68
+971
+113
 Barbakan Price
-[price] of patches at-points [[70 120]]
+[price] of patches at-points [[34 82]]
 17
 1
 11
 
 MONITOR
-903
-252
-992
-297
-Church price
-[price] of patches at-points [[50 90]]
+884
+222
+973
+267
+Barbakan price
+[price] of patches at-points [[64 118]]
 17
 1
 11
@@ -444,7 +433,7 @@ building-count
 building-count
 0
 15
-7.0
+15.0
 1
 1
 NIL
@@ -452,33 +441,253 @@ HORIZONTAL
 
 MONITOR
 768
-22
+10
 960
-67
+55
 Krakow Income
-sum([visitors * price] of patches at-points [[70 120] [45 25] [50 90] [30 90] [10 40] [10 130] [95 3] [5 5] [100 130]])
+sum([visitors * price] of patches at-points [[23 59] [27 103] [90 105] [12 24] [51 111] [97 47] [82 14] [19 81] [6 101] [ 44 52] [48 18] [64 118] [50 88] [39 73] [34 82]])
 17
 1
 11
 
 MONITOR
-724
-303
-886
-348
-Wierzynek
-[visitors] of patches at-points [[10 130]]
+705
+273
+867
+318
+Wawel
+[visitors] of patches at-points [[48 18]]
 17
 1
 11
 
 MONITOR
-902
-303
-992
-348
-Wierzynek price
-[price] of patches at-points [[10 130]]
+883
+273
+973
+318
+Wawel price
+[price] of patches at-points [[48 18]]
+17
+1
+11
+
+MONITOR
+884
+326
+974
+371
+All saint's square price
+[price] of patches at-points [[ 44 52]]
+17
+1
+11
+
+MONITOR
+708
+323
+867
+368
+All saints sq
+[visitors] of patches at-points [[ 44 52]]
+17
+1
+11
+
+MONITOR
+708
+373
+867
+418
+Bagatela Theater
+[visitors] of patches at-points [[6 101]]
+17
+1
+11
+
+MONITOR
+882
+374
+974
+419
+Bagatela price
+[price] of patches at-points [[6 101]]
+17
+1
+11
+
+MONITOR
+709
+422
+868
+467
+Jagiellonian University
+[visitors] of patches at-points [[19 81]]
+17
+1
+11
+
+MONITOR
+882
+421
+975
+466
+University price
+[price] of patches at-points [[19 81]]
+17
+1
+11
+
+MONITOR
+710
+471
+868
+516
+Escape room
+[visitors] of patches at-points [[82 14]]
+17
+1
+11
+
+MONITOR
+881
+472
+976
+517
+Escape room price
+[price] of patches at-points [[82 14]]
+17
+1
+11
+
+MONITOR
+882
+520
+976
+565
+Ice ring price
+[price] of patches at-points [[97 47]]
+17
+1
+11
+
+MONITOR
+711
+520
+869
+565
+Ice ring
+[visitors] of patches at-points [[97 47]]
+17
+1
+11
+
+MONITOR
+710
+569
+867
+614
+Czartoryscy museum
+[visitors] of patches at-points [[51 111]]
+17
+1
+11
+
+MONITOR
+882
+569
+977
+614
+Czartoryscy price
+[price] of patches at-points [[51 111]]
+17
+1
+11
+
+MONITOR
+710
+618
+867
+663
+Boulevards
+[visitors] of patches at-points [[12 24]]
+17
+1
+11
+
+MONITOR
+881
+618
+978
+663
+Boulvards price
+[price] of patches at-points [[12 24]]
+17
+1
+11
+
+MONITOR
+711
+667
+867
+712
+Słowacki theatre
+[visitors] of patches at-points  [[90 105]]
+17
+1
+11
+
+MONITOR
+882
+667
+978
+712
+Słowacki price
+[price] of patches at-points  [[90 105]]
+17
+1
+11
+
+MONITOR
+712
+716
+866
+761
+Szczepanski sq
+[visitors] of patches at-points [[27 103]]
+17
+1
+11
+
+MONITOR
+883
+717
+979
+762
+Szczepański price
+[price] of patches at-points [[27 103]]
+17
+1
+11
+
+MONITOR
+713
+766
+866
+811
+Pope's window
+[visitors] of patches at-points [[23 59]]
+17
+1
+11
+
+MONITOR
+882
+767
+980
+812
+Pope's window
+[price] of patches at-points [[23 59]]
 17
 1
 11
