@@ -48,12 +48,12 @@ to create-buildings
   ask patch(97)(47)[become-building 10 150 40] ;Lodowisko - 1godz 10zł
   ask patch(82)(14)[become-building 30 150 10] ;Escape room - 1godz 20zł
   ask patch(19)(81)[become-building 10 20 200] ;UJ - 8min 0zł
+  ask patch(39)(73)[become-building 100 150 30] ;Wierzynek - 60 min 100 zł
   ask patch(6)(101)[become-building 25 150 50]  ;Teatr Bagatela - 1godz 25zł
   ask patch(44)(52)[become-building 10 50 200] ;Plac Wszystkich Świętych - 20min 0zł
   ask patch(48)(18)[become-building 18 225 200] ;Wawel - 90 min 18 zł
   ask patch(64)(118)[become-building 15 50 200] ;Barbakan - 20 min 8 zł
   ask patch(50)(88)[become-building 10 75 200] ;Mariacki - 30 min 10 zł
-  ask patch(39)(73)[become-building 100 150 30] ;Wierzynek - 60 min 100 zł
   ask patch(34)(82)[become-building 19 450 200]  ;Sukiennice muzeum - 180 min 19 zł
   set buildings sublist buildings 0 building-count
 end
@@ -71,8 +71,8 @@ to create-people [counter from-hotel]
     set goal one-of patches
     set color black
     set size 3
-    set budget random 500
-    set time 300 + random 1200           ;Mają minimum dwie godzinki, maks 10
+    set budget random-normal 0 500
+    set time 300 + random-normal 0 1200           ;Mają minimum dwie godzinki, maks 10
     set shape "person"
     set to-visit buildings
     set waiter 0
@@ -287,55 +287,55 @@ NIL
 0
 
 SLIDER
-1088
-189
-1282
-222
+1042
+127
+1272
+160
 popularity-per-step
 popularity-per-step
 0
 20
-9.0
+0.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-1086
-121
-1319
-154
+1039
+80
+1272
+113
 minimum-route-popularity
 minimum-route-popularity
 0
 80
-29.0
+59.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-1094
-256
-1266
-289
+1043
+175
+1271
+208
 walker-count
 walker-count
 0
 200
-102.0
+200.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-1091
-354
-1270
-387
+1044
+223
+1271
+256
 walker-vision-dist
 walker-vision-dist
 0
@@ -347,9 +347,9 @@ NIL
 HORIZONTAL
 
 MONITOR
-711
+705
 68
-873
+867
 113
 Sukiennice visitors
 [visitors] of patches at-points [[34 82]]
@@ -380,11 +380,11 @@ Barbakan visitors
 11
 
 MONITOR
-709
-118
-873
-163
-Wierzynek
+704
+115
+868
+160
+Wierzynek visitors
 [visitors] of patches at-points [[39 73]]
 17
 1
@@ -393,9 +393,9 @@ Wierzynek
 MONITOR
 883
 172
-973
+1012
 217
-Mariacki Price
+Mariacki price
 [price] of patches at-points [[50 88]]
 17
 1
@@ -404,9 +404,9 @@ Mariacki Price
 MONITOR
 882
 115
-972
+1010
 160
-Wierzynek Price
+Wierzynek price
 [price] of patches at-points [[39 73]]
 17
 1
@@ -415,9 +415,9 @@ Wierzynek Price
 MONITOR
 882
 68
-971
+1010
 113
-Barbakan Price
+Barbakan price
 [price] of patches at-points [[34 82]]
 17
 1
@@ -426,7 +426,7 @@ Barbakan Price
 MONITOR
 884
 222
-973
+1011
 267
 Barbakan price
 [price] of patches at-points [[64 118]]
@@ -435,15 +435,15 @@ Barbakan price
 11
 
 SLIDER
-1056
-511
-1228
-544
+1045
+270
+1270
+303
 building-count
 building-count
 0
 15
-6.0
+15.0
 1
 1
 NIL
@@ -465,7 +465,7 @@ MONITOR
 273
 867
 318
-Wawel
+Wawel visitors
 [visitors] of patches at-points [[48 18]]
 17
 1
@@ -474,7 +474,7 @@ Wawel
 MONITOR
 883
 273
-973
+1014
 318
 Wawel price
 [price] of patches at-points [[48 18]]
@@ -485,7 +485,7 @@ Wawel price
 MONITOR
 884
 326
-974
+1014
 371
 All saint's square price
 [price] of patches at-points [[ 44 52]]
@@ -498,7 +498,7 @@ MONITOR
 323
 867
 368
-All saints sq
+All Saints Sq visitors
 [visitors] of patches at-points [[ 44 52]]
 17
 1
@@ -509,7 +509,7 @@ MONITOR
 373
 867
 418
-Bagatela Theater
+Bagatela Theater visitors
 [visitors] of patches at-points [[6 101]]
 17
 1
@@ -518,7 +518,7 @@ Bagatela Theater
 MONITOR
 882
 374
-974
+1014
 419
 Bagatela price
 [price] of patches at-points [[6 101]]
@@ -531,7 +531,7 @@ MONITOR
 422
 868
 467
-Jagiellonian University
+UJ visitors
 [visitors] of patches at-points [[19 81]]
 17
 1
@@ -540,9 +540,9 @@ Jagiellonian University
 MONITOR
 882
 421
-975
+1015
 466
-University price
+UJ price
 [price] of patches at-points [[19 81]]
 17
 1
@@ -553,7 +553,7 @@ MONITOR
 471
 868
 516
-Escape room
+Escape room visitors
 [visitors] of patches at-points [[82 14]]
 17
 1
@@ -562,7 +562,7 @@ Escape room
 MONITOR
 881
 472
-976
+1016
 517
 Escape room price
 [price] of patches at-points [[82 14]]
@@ -573,9 +573,9 @@ Escape room price
 MONITOR
 882
 520
-976
+1016
 565
-Ice ring price
+Ice rink price
 [price] of patches at-points [[97 47]]
 17
 1
@@ -586,7 +586,7 @@ MONITOR
 520
 869
 565
-Ice ring
+Ice rink visitors
 [visitors] of patches at-points [[97 47]]
 17
 1
@@ -597,7 +597,7 @@ MONITOR
 569
 867
 614
-Czartoryscy museum
+Czartoryscy visitors
 [visitors] of patches at-points [[51 111]]
 17
 1
@@ -606,7 +606,7 @@ Czartoryscy museum
 MONITOR
 882
 569
-977
+1017
 614
 Czartoryscy price
 [price] of patches at-points [[51 111]]
@@ -619,7 +619,7 @@ MONITOR
 618
 867
 663
-Boulevards
+Boulevards visitors
 [visitors] of patches at-points [[12 24]]
 17
 1
@@ -628,7 +628,7 @@ Boulevards
 MONITOR
 881
 618
-978
+1017
 663
 Boulvards price
 [price] of patches at-points [[12 24]]
@@ -641,7 +641,7 @@ MONITOR
 667
 867
 712
-Słowacki theatre
+Słowacki theatre visitors
 [visitors] of patches at-points  [[90 105]]
 17
 1
@@ -650,9 +650,9 @@ Słowacki theatre
 MONITOR
 882
 667
-978
+1017
 712
-Słowacki price
+Słowacki theatre price
 [price] of patches at-points  [[90 105]]
 17
 1
@@ -663,7 +663,7 @@ MONITOR
 716
 866
 761
-Szczepanski sq
+Szczepanski Sq visitors
 [visitors] of patches at-points [[27 103]]
 17
 1
@@ -672,9 +672,9 @@ Szczepanski sq
 MONITOR
 883
 717
-979
+1016
 762
-Szczepański price
+Szczepański Sq price
 [price] of patches at-points [[27 103]]
 17
 1
@@ -685,7 +685,7 @@ MONITOR
 766
 866
 811
-Pope's window
+Pope's window visitors
 [visitors] of patches at-points [[23 59]]
 17
 1
@@ -694,19 +694,19 @@ Pope's window
 MONITOR
 882
 767
-980
+1016
 812
-Pope's window
+Pope's window price
 [price] of patches at-points [[23 59]]
 17
 1
 11
 
 MONITOR
-1081
-32
-1138
-77
+1120
+17
+1177
+62
 Time
 clock + 9
 17
