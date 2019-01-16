@@ -19,14 +19,15 @@ patches-own[
 
 ]
 
-globals[buildings sums]
+globals[buildings sums clock]
 
 to setup
+  set clock 9
   clear-all
   reset-ticks
   set buildings(list)
   set sums(list)
-  import-drawing "map.png"
+  import-drawing "mapa.png"
   ask patches[
     set pcolor green
     set popularity 1
@@ -34,33 +35,39 @@ to setup
     set visitors 0
   ]
   create-buildings
-  create-people
+  create-people walker-count false
 end
 
 to create-buildings
   ; obliczenie ticków potrzebnych na zwiedzenie z proporcji: 50 ticków to około 20 minut czasu realnego
-  ask patch(23)(59)[become-building 0 50 200] ;Franciszkanska - 20 min 0 zł
-  ask patch(27)(103)[become-building 0 25 200] ;Plac Szczepański - 10 min 0zł
+  ask patch(23)(59)[become-building 10 50 200] ;Okno papieski - 20 min 0 zł
+  ask patch(27)(103)[become-building 5 25 200] ;Plac Szczepański - 10 min 0zł
   ask patch(90)(105)[become-building 30 300 50] ;Teatr słowackiego - 2godz 30zł
-  ask patch(12)(24)[become-building 0 70 200]  ;Bulwary wislane - 28min 0zł
+  ask patch(12)(24)[become-building 5 70 200]  ;Bulwary wislane - 28min 0zł
   ask patch(51)(111)[become-building 15 150 100] ;Czartoryscy - 1godz 15zł
   ask patch(97)(47)[become-building 10 150 40] ;Lodowisko - 1godz 10zł
   ask patch(82)(14)[become-building 30 150 10] ;Escape room - 1godz 20zł
-  ask patch(19)(81)[become-building 0 20 200] ;UJ - 8min 0zł
+  ask patch(19)(81)[become-building 10 20 200] ;UJ - 8min 0zł
   ask patch(6)(101)[become-building 25 150 50]  ;Teatr Bagatela - 1godz 25zł
-  ask patch(44)(52)[become-building 0 50 200] ;Plac Wszystkich Świętych - 20min 0zł
+  ask patch(44)(52)[become-building 10 50 200] ;Plac Wszystkich Świętych - 20min 0zł
   ask patch(48)(18)[become-building 18 225 200] ;Wawel - 90 min 18 zł
-  ask patch(64)(118)[become-building 8 50 200] ;Barbakan - 20 min 8 zł
+  ask patch(64)(118)[become-building 15 50 200] ;Barbakan - 20 min 8 zł
   ask patch(50)(88)[become-building 10 75 200] ;Mariacki - 30 min 10 zł
   ask patch(39)(73)[become-building 100 150 30] ;Wierzynek - 60 min 100 zł
   ask patch(34)(82)[become-building 19 450 200]  ;Sukiennice muzeum - 180 min 19 zł
   set buildings sublist buildings 0 building-count
 end
 
-to create-people
-  create-turtles walker-count[
-    set xcor random-xcor
-    set ycor random-ycor
+to create-people [counter from-hotel]
+  create-turtles counter[
+    if not from-hotel [
+      set xcor random-xcor
+      set ycor random-ycor
+    ]
+    if from-hotel[
+      set xcor one-of [100 0]
+      set ycor random-ycor
+    ]
     set goal one-of patches
     set color black
     set size 3
@@ -80,10 +87,25 @@ to create-people
 end
 
 to go       ; co się dzieje w pętli co tick
+  ; zaczynamy od 9
+
   move-walkers
+  if ticks mod 37 = 0 and ticks < 2700[
+    create-people 10 true
+  ]
+
+  if ticks = 1050 or ticks = 1800 [
+    create-people 50 true
+  ]
   decay-popularity
-  if not any? turtles [
+  if not any? turtles or ticks = 24 * 150 [
      stop
+  ]
+  if ticks mod 75 = 0 [
+    set clock clock + 0.5
+    if clock = 15[
+      set clock -9
+    ]
   ]
   tick
 end
@@ -273,7 +295,7 @@ popularity-per-step
 popularity-per-step
 0
 20
-0.0
+9.0
 1
 1
 NIL
@@ -288,7 +310,7 @@ minimum-route-popularity
 minimum-route-popularity
 0
 80
-59.0
+29.0
 1
 1
 NIL
@@ -303,7 +325,7 @@ walker-count
 walker-count
 0
 200
-200.0
+102.0
 1
 1
 NIL
@@ -325,9 +347,9 @@ NIL
 HORIZONTAL
 
 MONITOR
-705
+711
 68
-867
+873
 113
 Sukiennice visitors
 [visitors] of patches at-points [[34 82]]
@@ -358,10 +380,10 @@ Barbakan visitors
 11
 
 MONITOR
-704
-115
-868
-160
+709
+118
+873
+163
 Wierzynek
 [visitors] of patches at-points [[39 73]]
 17
@@ -421,7 +443,7 @@ building-count
 building-count
 0
 15
-1.0
+6.0
 1
 1
 NIL
@@ -676,6 +698,17 @@ MONITOR
 812
 Pope's window
 [price] of patches at-points [[23 59]]
+17
+1
+11
+
+MONITOR
+1081
+32
+1138
+77
+Time
+clock + 9
 17
 1
 11
